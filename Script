@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Funktion zur Initialisierung des Spielfelds
+initialize_board() {
+    board=(1 2 3 4 5 6 7 8 9)
+}
+
+# Funktion zum Anzeigen des Spielfelds
+display_board() {
+    echo " ${board[0]} | ${board[1]} | ${board[2]}"
+    echo "-----------"
+    echo " ${board[3]} | ${board[4]} | ${board[5]}"
+    echo "-----------"
+    echo " ${board[6]} | ${board[7]} | ${board[8]}"
+}
+
+# Funktion zur Überprüfung, ob das Spiel vorbei ist
+check_game_over() {
+    local symbol="$1"
+
+    # Überprüfen auf Gewinnbedingungen
+    if [[ (${board[0]} == $symbol && ${board[1]} == $symbol && ${board[2]} == $symbol) ||
+          (${board[3]} == $symbol && ${board[4]} == $symbol && ${board[5]} == $symbol) ||
+          (${board[6]} == $symbol && ${board[7]} == $symbol && ${board[8]} == $symbol) ||
+          (${board[0]} == $symbol && ${board[3]} == $symbol && ${board[6]} == $symbol) ||
+          (${board[1]} == $symbol && ${board[4]} == $symbol && ${board[7]} == $symbol) ||
+          (${board[2]} == $symbol && ${board[5]} == $symbol && ${board[8]} == $symbol) ||
+          (${board[0]} == $symbol && ${board[4]} == $symbol && ${board[8]} == $symbol) ||
+          (${board[2]} == $symbol && ${board[4]} == $symbol && ${board[6]} == $symbol) ]]; then
+        echo "$symbol hat gewonnen!"
+        exit 0
+    fi
+
+    # Überprüfen auf Unentschieden
+    if [[ ! " ${board[*]} " =~ [0-9]+ ]]; then
+        echo "Unentschieden!"
+        exit 0
+    fi
+}
+
+# Funktion zum Zug des Spielers
+player_move() {
+    local symbol="X"
+    read -p "Bitte wählen Sie ein Feld (1-9): " choice
+
+    # Überprüfen auf gültigen Zug
+    while [[ ${board[$(($choice-1))]} == "X" || ${board[$(($choice-1))]} == "O" || ! "$choice" =~ ^[1-9]$ ]]; do
+        read -p "Ungültige Auswahl. Bitte wählen Sie erneut: " choice
+    done
+
+    # Aktualisieren des Spielfelds
+    board[$(($choice-1))]=$symbol
+}
+
+# Funktion zum Zug des Computers
+computer_move() {
+    local symbol="O"
+    local choice
+
+    # Zufällige Auswahl eines freien Feldes
+    while true; do
+        choice=$((RANDOM % 9))
+        if [[ ${board[$choice]} != "X" && ${board[$choice]} != "O" ]]; then
+            break
+        fi
+    done
+
+    # Aktualisieren des Spielfelds
+    board[$choice]=$symbol
+}
+
+# Hauptspiel-Schleife
+initialize_board
+while true; do
+    display_board
+    player_move
+    check_game_over "X"
+    computer_move
+    check_game_over "O"
+done
